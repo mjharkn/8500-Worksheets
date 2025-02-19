@@ -104,12 +104,12 @@ In the `matrix()` function:
 
 (@) You try now, create a matrix that had five rows with numbers that range from 25 to 49. 
 ```{r}
-
+matrix(25:49, byrow = TRUE, nrow = 5)
 ```
 
 (@) Can you create a matrix that has 3 rows with only even numbers from 2 to 18? 
 ```{r}
-
+matrix(seq(2, 18, by = 2), nrow = 3)
 ```
 
 ##### Subsetting Matricies 
@@ -159,7 +159,7 @@ gayguides[1:3,]
 
 (@) Why is this different? What do we get compared to the previous example? 
 
->
+> The comma at the end of the range given specifies that it is asking for an output of rows, whereas the previous line of code doesn't specify so it gives the columns and rows (?)
 
 (@) Can you find just the city and state for the first 5 entries? 
 ```{r}
@@ -183,8 +183,8 @@ Another useful operator to know is `$` which we used a little bit in the previou
  
 So for example both of these produce the same result. One is just easier to type. Because the output here is so large, I've commented these two lines out. Uncomment them and the run the block.
 ```{r R.options=list(max.print=10)}
-#gayguides["title"]
-#gayguides$title
+gayguides["title"]
+gayguides$title
 ```
 
 Notice the above output is _huge_. We can combine `$` and `[` to drill down more specifically like we did earlier.
@@ -194,15 +194,15 @@ gayguides$city[100:110]
 
 (@) What does this code do? 
 
->
-
+> This code specifies that we are looking for the city in columns 100 through 110.
 
 We can also use `$` to create a new column in `gayguides`. 
 ```{r}
 gayguides$mynewcolumn <- TRUE
 gayguides$mynewcolumn[1:10]
 ```
-What does this code do? It creates a new column in the gayguides data called `mynewcolumn` and it assigns `TRUE` to every row (all 60k). This is a bit of a unrealistic example. You probably won't want to add the same value to 60k+ rows but the concept here is useful and we'll use it later in this worksheet. 
+
+What does this code do? It creates a new column in the gayguides data called `mynewcolumn` and it assigns `TRUE` to every row (all 60k). This is a bit of a unrealistic example. You probably won't want to add the same value to 60k+ rows but the concept here is useful and we'll use it later in this worksheet.
 
 ### Control Structures: Loops & Choices
 
@@ -262,17 +262,20 @@ if (x > 90) {
 
 (@) Create a list of presidents and store it in a variable. Use an `if` statement to check if the number of presidents in the list is more than 5. If its not, indicate that too. 
 ```{r}
-
+presidents <- c("Teddy", "Taft", "Wilson")
+if (presidents > 5) print(TRUE) else print("This list is less than 5")
 ```
 
 (@) You can also use an if statement to check a variable in a dataframe. How might you use an if statement to check if the GayGuides dataset contains any year after 1990? (Hint: first try to figure out how to determine the latest year in the dataframe and then build an if statement that checks that and prints something out if its true or false. You should think about what kind of value in contained in the Year column, how to access it, and how to check for the latest value.) 
 
 ```{r}
+x <- max(gayguides$Year)
+if (x > 1990) print(TRUE) else print(FALSE)
 ```
 
 (@) Reflect on the question above. How did you figure this out? What was the process you went through to build this chunk of code?
 
-> 
+> I thought back to our previous worksheet, where I used the max() function to find the latest year in the gayguides dataset. I made a variable out of that function and utilized it in the if statement out of it along with an else statement to print false if that conditions were not met.
 
 #### Loops
 
