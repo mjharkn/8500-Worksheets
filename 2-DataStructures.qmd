@@ -1,7 +1,7 @@
 ---
 title: "Worksheet 2: Data Structures"
 author: "Mandolyn Harkness"
-date: "due"
+date: "2/24/25"
 ---
 
 _This is the second in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), render your document to a pdf, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
@@ -148,7 +148,7 @@ data("gayguides")
 
 To subset this data we could pull two particular columns like this: 
 ```{r}
-#gayguides[2:3]
+gayguides[2:3]
 ```
 That returns columns 2 and 3 (including every single row!). 
 
@@ -159,25 +159,27 @@ gayguides[1:3,]
 
 (@) Why is this different? What do we get compared to the previous example? 
 
-> The comma at the end of the range given specifies that it is asking for an output of rows, whereas the previous line of code doesn't specify so it gives the columns and rows (?)
+> The comma at the end of the range given specifies that it is asking for an output of rows, whereas the previous line of code doesn't specify so it gives the columns and ever single row in the columns.
 
 (@) Can you find just the city and state for the first 5 entries? 
 ```{r}
-
+gayguides$city[1:5]
+gayguides$state[1:5]
 ```
 
 (@) How about the street address and type for rows 2,555 to 2,560?
 
 ```{r}
-
+gayguides$streetaddress[2555:2560]
 ```
 
 (@) Load another dataset from `DigitalMethodsData`. Subset it to find some element of the data. Write the code below and then explain what element of the data you wanted to subset and why:
 ```{r}
-
+data("BostonWomenVoters")
+BostonWomenVoters[,7:10][1:5,]
 ```
 
-> 
+> I subset columns 7 through 10 along with rows 1 through 5 in order to get the full names and addresses of the first 5 women in the dataset.
 
 Another useful operator to know is `$` which we used a little bit in the previous worksheet. `$` is shorthand for accessing a variable in a dataframe. 
  
@@ -194,7 +196,7 @@ gayguides$city[100:110]
 
 (@) What does this code do? 
 
-> This code specifies that we are looking for the city in columns 100 through 110.
+> This code specifies that we are looking for the city in entries 100 through 110.
 
 We can also use `$` to create a new column in `gayguides`. 
 ```{r}
@@ -257,13 +259,18 @@ if (x > 90) {
 
 (@) You are teaching History 100 for Clemson. Write an `if` statement that calculates whether the enrollment cap of 30 on your class has been met. 
 ```{r}
-
+current.enrollment <- 23
+if (current.enrollment == 30) {
+  print("The enrollment cap for History 100 has been met")
+} else {
+  print("The enrollment cap for History 100 has not been met")
+}
 ```
 
 (@) Create a list of presidents and store it in a variable. Use an `if` statement to check if the number of presidents in the list is more than 5. If its not, indicate that too. 
 ```{r}
 presidents <- c("Teddy", "Taft", "Wilson")
-if (presidents > 5) print(TRUE) else print("This list is less than 5")
+if (length(presidents) > 5) print(TRUE) else print("This list is less than 5")
 ```
 
 (@) You can also use an if statement to check a variable in a dataframe. How might you use an if statement to check if the GayGuides dataset contains any year after 1990? (Hint: first try to figure out how to determine the latest year in the dataframe and then build an if statement that checks that and prints something out if its true or false. You should think about what kind of value in contained in the Year column, how to access it, and how to check for the latest value.) 
@@ -307,12 +314,15 @@ for (p in 1:length(presidents)) {
 
 (@) Why does this work? What does `length()` do and why do we use it on `presidents`?
 
-> 
+> I believe we are using length on presidents to establish the range for the loop since it is a character vector list rather than a numerical one. "p" represents the items in the list (standing in for i). So, we are using length() because it ensures that the loop will run through every item on the list even if the number of presidents changes, whereas if we coded a set number in, it would fail if the number of presidents changed.
 
 Create a character vector that contains the title of each of your classes this semester. Can you write a `for` loop that prints out "I am enrolled in" and the name of each of your classes? ("I am enrolled in History 8150", "I am enrolled in History 8000".....etc). Hint: you'll need a function to combine the output and some text of your choosing inside the function. 
 
 ```{r}
-
+spring.2025.classes <- c("History 8500", "History 8700", "History 8800")
+for (class in spring.2025.classes) {
+  print(paste("I am enrolled in", class))
+}
 ```
 
 Sometimes we want our loop to terminate itself early. There are two statements that help us do that: 
@@ -344,15 +354,34 @@ for (i in 1:10) {
 
 (@) What happened here? Why did the loop only print 3 and 4? 
 
+> The first if statement in this look is saying to skip over the value if it is less than three, so it skips over 1 and 2. The second if statement is saying that if the value is greater than or equal to 5, to break the loop, so once the we hit 5 the loop breaks and it does not print 5. 3 and 4 are the only numbers that are printed because they have a value that is not less than 3 (meeting the requirements of the first if statement) and are not greater than or equal to 5 (meeting the requirements of the second if statement), so they are printed.
 
 (@) In the state population data, can you write a loop that pulls only states with populations between 200,000 and 250,000 in 1800? You could accomplish this a few different ways. Try to use next and break statements. 
 ```{r}
-
+data(statepopulations)
+for (i in 1:nrows(statepopulations)){
+  if(is.na(statepopulations$x1800[i])){
+    next
+  }
+  if(statepopulations$X1800[i] > 250000){
+    next
+  }
+  if(statepopulations$1800[i] < 200000){
+    next
+  }
+  print(statepopulations$X1800[i])
+}
 ```
 
 (@) What if we wanted to loop through the gay guides data? Can you write a loop that iterates through the cities in the Gay Guides data and returns the title of any location in Greenville? 
 ```{r}
-
+data(gayguides)
+for (i in 1:nrow(gayguides)) {
+  if (is.na(gayguides$city[i] != "Greenville")) {
+    next
+  }
+  print(gayguides$title[i])
+}
 ```
 
 `while` is another useful tool for writing loops. While will run a loop _while_ a condition is true. Once that condition is not true, it exits. For example: 
@@ -398,7 +427,7 @@ historyStudents <- function(studentname, class) {
 ```
 (@) Can you run this function? 
 ```{r}
-
+historyStudents("Mandolyn", "History 8500")
 ```
 
 
@@ -416,7 +445,7 @@ There are several components to a function.
 
 (@) Reflect on the process of building the above function. How did you go about figuring this out? 
 
->
+> 
 
 The body of a functions can use any of the techniques we've learned in this worksheet like loops and if statements. For example: 
 ```{r}
@@ -444,7 +473,7 @@ grade(75)
 GeorgeWashington <- grade(60)
 ```
 
->
+> To print George Washington's grade out, the function now has to be called by typing in the variable which has just been created with a function. So, to call that specific function you have to run GeorgeWashington in the console.
 
 
 Here's a more complex example: 
@@ -474,4 +503,3 @@ gg.locations("San Diego", 1980)
 ```{r}
 
 ```
-
