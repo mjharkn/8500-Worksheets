@@ -440,12 +440,17 @@ There are several components to a function.
 
 (@) Write a function that takes a string of text and counts the number of characters. The function should return "There are xx characters in that string." 
 ```{r}
+count.characters <- function(text) {
 
+num.chrs <- nchar(text)
+print(paste("There are", num.chrs, "characters in that string."))
+}
+count.characters("Mandolyn")
 ```
 
 (@) Reflect on the process of building the above function. How did you go about figuring this out? 
 
-> 
+> I'm really not sure if I did this the way you intended us to do it. I first thought of using length() in the function but realized that it wouldn't count the characters, just the item/word. I looked up how to count characters in a string and went on stack overflow and found out about the built in nchar() function, so I used that and then wrote out what the function should print.
 
 The body of a functions can use any of the techniques we've learned in this worksheet like loops and if statements. For example: 
 ```{r}
@@ -496,10 +501,30 @@ gg.locations("San Diego", 1980)
 (@) Write a function that accepts two arguments: a state and a year. The function should pull all the locations in that state and year from the gayguides dataset and return a statement that says "Found a location in [state] called [location title]". (Where [state] is the state and [location title] is the title of a location in that year and state.)
 
 ```{r}
+pull.locations <- function(g.state, g.year) {
+  data(gayguides)
 
+for (i in 1:length(gayguides$state)) {
+  if (gayguides$state[i] == g.state && gayguides$Year[i] == g.year) {
+    print(paste("Found a location in", g.state, "called", gayguides$title[i]))
+  } else {
+    next
+  }
+}
+}
+
+pull.locations("CA", 1981)
 ```
 
 (@) Use the Boston Women Voters dataset (BostonWomenVoters). Write a function that accepts the name of an occupation. Your function should return new dataframe that includes the records for every voter listed with that occupation.  
 ```{r}
+filter.by.occupation <- function(occupation.name) {
+  for (i in 1:length(BostonWomenVoters$Occupation)) {
+    if (BostonWomenVoters$Occupation[i] == occupation.name) {
+      print(BostonWomenVoters$Name[i])
+    }
+  }
+}
 
+filter.by.occupation("Housewife")
 ```
