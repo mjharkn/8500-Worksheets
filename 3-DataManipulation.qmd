@@ -181,7 +181,7 @@ mydata <- gayguides %>%
 It doesn't appear that this did much. But if you hover over this new variable in your environment pane, you'll see that its now listed as a "grouped data frame." Compare that to `gayguides` which is listed as just a data frame. This means that now we can run calculations on this data and it'll perform them "by group". Or, in other words, it'll perform operations on each year within the dataset. That's where `summarize()` comes in. `summarize()` creates a new data frame with one (or more) rows for each combination of grouping variables. In this case our grouping is by year, so the resulting data frame will group records by each year in the `gayguides` dataset.
 
 ```{r}
-gayguides %>% 
+  gayguides %>% 
     select(title, Year) %>%
     group_by(Year) %>%
     summarize(count = n())
@@ -190,23 +190,48 @@ What happened here? In this example, we asked group_by to create groups based on
 
 (@) You try, use group_by and summarize to find the total number of locations in each state, each year.
 ```{r}
-
+gayguides %>%
+  select(title, state, Year) %>%
+  group_by(state, Year) %>%
+  summarize(count = n())
 ```
 
 (@) Summarize can do more than just count rows. Can you use `summarize()` to find the average age for each occupation in the Boston Women Voters data?
 ```{r}
-
+BostonWomenVoters %>%
+  select(Age, Occupation) %>%
+  group_by(Age, Occupation) %>%
+  summarize(mean(Age))
 ```
 
 (@) In the `gayguides` data, on average how many locations did each city in South Carolina have between 1970 and 1975?
 ```{r}
-
+gayguidesSC70s <- data.frame(
+gayguides %>%
+  filter(state == "SC") %>%
+  filter(Year == 1970:1975) %>%
+  select(title, city, state, Year) %>%
+  group_by(city, state, Year) %>%
+  summarize(count = n())
+)
 ```
+
+> So right now, I can figure out how to get a count of how many locations were in a city in a specific year, but I need to figure out how to get it to combine the years. I am thinking that count isn't the right thing to use in summarize maybe?? I will come back to this.
 
 (@) Filter the dataset for only the values in the southernstates list (created in the block below). Then tell me, how many locations were in all the southern states in 1975?
 ```{r}
 southernstates <- c("AL", "AR", "FL", "GA", "KY", "LA", "MD", "MS", "NC", "SC", "TN", "TX", "VI", "WV")
+```
 
+```{r}
+gg.southernstates <- data.frame(
+gayguides %>%
+  filter(state == southernstates) %>%
+  filter(Year == 1975) %>%
+  select(title, state, Year) %>%
+  group_by(state, Year) %>%
+  summarize(count = n())
+)
 ```
 
 ## Re-Shaping Data: Joins and Pivots
