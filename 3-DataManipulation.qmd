@@ -261,7 +261,23 @@ regions <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsDa
 
 ```
 
+```{r}
+ggregions.1980 <- data.frame(
+  left_join(gayguides, regions, by=c("state"="State.Code")) %>%
+  filter(Year == 1980) %>%
+  select(title, Year, Division) %>%
+  group_by(Year, Division) %>%
+  summarize(count = n())
+)
+```
+
 (@) Explain what you did above. What variable did you join by and why? What results?
+
+> I first joined the variables of state (from gayguides) and State.Code (from regions). This results in a dataset where the variables from the gayguides and the regions are combined. The issue I have with this dataset at this point, though, is that state is repeating as a variable but I'm not sure what to combine this with since there is only a state code variable in the gayguides set. Could I just drop this column/variable??
+
+> To get the dataset to only reflect entries from 1980, I filtered so that Year == 1980.
+
+> To create a new dataset which counts how many times each region appeared in 1980, I piped the data filtered by Year == 1980 and used group_by() and summarize() to create a new dataset which includes a count of how many times each region appeared in 1980. Looking at this dataset reveals that the Mountain region appeared 285 times.
 
 (@)How much did LGTBQ life grow between 1970 and 1980? Can you create a data frame that computes the growth in the number of locations between 1970 and 1980 for every state? For every region? 
 ```{r}
