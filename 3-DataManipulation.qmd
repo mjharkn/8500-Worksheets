@@ -132,13 +132,16 @@ statepopulations %>% mutate(difference = X1900 - X1800)
 
 (@) In the Boston Women Voters dataset, every voter is given an age. Can you use their age to calculate each person's birth year? (Assume all this data was collected in 1920.)
 ```{r}
-
+data("BostonWomenVoters")
+BostonWomenVoters %>% mutate(difference = 1920 - Age)
 ```
 
 (@) Can you create a new column that combines the city and state columns in `gayguides` into a new column called location? It should list the city, state. (i.e. San Diego, CA)
 
 ```{r}
-
+gayguideslocations <- data.frame(
+gayguides %>% mutate(location = paste(city, ",", state))
+)
 ```
 
 ### Arrange
@@ -223,6 +226,7 @@ head(almshouse_admissions)
 (@) Below I've downloaded data about each of the census regions. Join this dataset with `gayguides`. Create a data frame that includes each of the regions and the total number of locations in 1980. How many locations appear in the Mountain region in 1980?
 ```{r}
 regions <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/censusregions.csv")
+
 ```
 
 (@) Explain what you did above. What variable did you join by and why? What results?
@@ -248,7 +252,7 @@ sc.parks <- sc.parks %>%
 ```
 
 (@) What did this code do? 
->
+> 
 
 (@) Here's another wide data frame. Can you turn this from a wide to a narrow data frame? 
 ```{r}
