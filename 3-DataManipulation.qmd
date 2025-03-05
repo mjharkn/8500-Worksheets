@@ -300,11 +300,16 @@ sc.parks <- sc.parks %>%
 ```
 
 (@) What did this code do? 
-> 
+> Within the function, "!city:type_of_worker" excludes those two columns in the narrowing process; "names_to" takes the names of the variables and converts that information to entries in a new column titled "year"; "values_to" takes the entries under the reworked columns and moves that data into a new column titled "count". When ran, this creates a new, narrowed dataframe that no longer has individual columns for every year, but instead has a "year" column and a "count" column. The count column tells us the number of workers in that year.
 
 (@) Here's another wide data frame. Can you turn this from a wide to a narrow data frame? 
 ```{r}
 rec.spaces <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/PlayAreabyType.csv")
+```
+
+```{r}
+rec.spaces <- rec.spaces %>%
+  pivot_longer(!type, names_to = "year", values_to = "count")
 ```
 
 The opposite of `pivot_longer()` is `pivot_wider()`. It "widens" data by increasing the number of columns and decreasing the number of rows. We can revert `sc.parks` back to a wide dataset using this function.
@@ -315,12 +320,14 @@ sc.parks %>%
 
 (@) Widen the `sc.parks` dataset so that the column names are drawn from the type of recreation worker.
 ```{r}
-
+sc.parks <- sc.parks %>%
+  pivot_wider(names_from = type_of_worker, values_from = count)
 ```
 
 (@) Turn `rec.spaces` into a wide dataframe. 
 ```{r}
-
+rec.spaces <- rec.spaces %>%
+  pivot_wider(names_from = type, values_from = count)
 ```
 
 
