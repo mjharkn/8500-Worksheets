@@ -144,6 +144,8 @@ gayguides %>% mutate(location = paste(city, ",", state))
 )
 ```
 
+> Not sure if I did this correctly, but I originally tried to add city and state together, but they are not numerical arguments so it wouldn't let me. I thought back to how we used paste in our first worksheet to combine two strings, so I used paste within the mutate function and it worked.
+
 ### Arrange
 `Arrange()` orders the rows of a data frame by the values of selected columns. In other words it sorts a data frame by a variable. In the `gayguides` data, we can sort the data by year with the earliest year first. If we wanted the latest year first, we could do so by using the `desc()` function. 
 
@@ -160,8 +162,13 @@ gayguides %>%
 
 (@) Using the `statepopulation` data, which state has the largest population in 1850? Write code that pulls only the relevant columns (state and 1850) and sorts it accordingly. 
 ```{r}
-
+pop.1850 <- data.frame(
+statepopulations %>%
+  arrange(desc(X1850))
+)
 ```
+
+> I know how to arrange the X1850 column and can see when I view the dataframe that the answer is New York had the largest population in 1850, but I am stuck on how to connect this to the state column.
 
 ### Group_by() and Summarize()
 
