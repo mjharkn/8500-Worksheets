@@ -57,7 +57,7 @@ gayguides %>%
 )
 ```
 
-> I just made a data frame here so I could check and see if it excluded the city and state columns, and it did.
+> I'm not sure if I had to, but I just made a data frame here so I could check and see if it excluded the city and state columns, and it did.
 
 ### Filter
 The filter function subsets a data frame and retains all the rows that satisfy your conditions. To be retained, the row must produce a value of TRUE for _all_ of the conditions you provide. 
@@ -84,25 +84,36 @@ gayguides %>%
 (@) The above code grabs every location where the city is Greenville. However, there is more than one city named Greenville. Can you filter to retrieve Greenville, SC? 
 
 ```{r}
-
+gayguides %>%
+  filter(city == "Greenville") %>%
+  filter(state == "SC")
 ```
 
 (@) How about every location between 1975 and 1980? 
 
 ```{r}
-
+gayguides %>%
+  filter(Year == 1975:1980)
 ```
 
 
 (@) Every entry in Greenville, SC between 1975 and 1980? 
 
 ```{r}
-
+greenville.sc.fiveyears <- data.frame(
+gayguides %>%
+  filter(city == "Greenville") %>%
+  filter(state == "SC") %>%
+  filter(Year == 1975:1980)
+)
 ```
 
 (@) Can you find all locations in 1975 except for New York and San Francisco? 
 ```{r}
-
+gayguides %>%
+  filter(Year == 1975) %>%
+  filter(city != "New York") %>%
+  filter(city != "San Francisco")
 ```
 
 (@) The amenity features column in gay guides contains a comma separated list of categorizations. (G), for example, stands for girls. However, this language changed over time and women's locations eventually are described as (L). What if we want to filter by any entry that has (G) OR (L) in the amenity feature column?  This is a bit more complicated because the entries are a comma separated list and (G) or (L) is often paired with other categorizations. How might you _search the dataframe for entries that match_ (G) or (L)?
