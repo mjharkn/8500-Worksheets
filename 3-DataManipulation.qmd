@@ -116,9 +116,22 @@ gayguides %>%
   filter(city != "San Francisco")
 ```
 
+```{r}
+gayguides %>%
+  filter(Year == 1975) %>%
+  filter(city != "New York" & city != "San Francisco")
+```
+or 
+
+```{r}
+gayguides %>%
+  filter(Year == 1975 & !(city))
+  ```
+
 (@) The amenity features column in gay guides contains a comma separated list of categorizations. (G), for example, stands for girls. However, this language changed over time and women's locations eventually are described as (L). What if we want to filter by any entry that has (G) OR (L) in the amenity feature column?  This is a bit more complicated because the entries are a comma separated list and (G) or (L) is often paired with other categorizations. How might you _search the dataframe for entries that match_ (G) or (L)?
 ```{r}
-
+gayguides %>% 
+  filter(amenityfeatures == "(G)" | amenityfeatures == "(L)")
 ```
 
 ### Mutate
@@ -265,7 +278,7 @@ regions <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsDa
 ggregions.1980 <- data.frame(
   left_join(gayguides, regions, by=c("state"="State.Code")) %>%
   filter(Year == 1980) %>%
-  select(title, Year, Division) %>%
+  select(-State) %>%
   group_by(Year, Division) %>%
   summarize(count = n())
 )
@@ -281,9 +294,16 @@ ggregions.1980 <- data.frame(
 
 (@)How much did LGTBQ life grow between 1970 and 1980? Can you create a data frame that computes the growth in the number of locations between 1970 and 1980 for every state? For every region? 
 ```{r}
-
+ggregions.tenyears <- data.frame(
+  left_join(gayguides, regions, by=c("state"="State.Code")) %>%
+  filter(Year == 1970:1980) %>%
+  select(title, state, Year) %>%
+  group_by(state, Year) %>%
+  summarize(count = n())
+)
 ```
 
+> Stuck here for now; how do I get it to calculate the growth? Do I use something within the summarize function or do I use mutate and use the difference to calculate the growth and then create a dataframe based on that difference??
 
 ### `pivot_longer()` and `pivot_wider()`: Converting Wide and Long Data
 
