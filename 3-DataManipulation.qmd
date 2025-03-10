@@ -177,11 +177,10 @@ gayguides %>%
 ```{r}
 pop.1850 <- data.frame(
 statepopulations %>%
+  select(STATE, X1850) %>%
   arrange(desc(X1850))
 )
 ```
-
-> I know how to arrange the X1850 column and can see when I view the dataframe that the answer is New York had the largest population in 1850, but I am stuck on how to connect this to the state column.
 
 ### Group_by() and Summarize()
 
