@@ -224,11 +224,10 @@ gayguides %>%
   filter(Year == 1970:1975) %>%
   select(title, city, state, Year) %>%
   group_by(city, state, Year) %>%
-  summarize(count = n())
+  summarize(count = n()) %>%
+  summarize(mean(count))
 )
 ```
-
-> So right now, I can figure out how to get a count of how many locations were in a city in a specific year, but I need to figure out how to get it to combine the years. I am thinking that count isn't the right thing to use in summarize maybe?? I will come back to this.
 
 (@) Filter the dataset for only the values in the southernstates list (created in the block below). Then tell me, how many locations were in all the southern states in 1975?
 ```{r}
