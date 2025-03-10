@@ -210,10 +210,10 @@ gayguides %>%
 
 (@) Summarize can do more than just count rows. Can you use `summarize()` to find the average age for each occupation in the Boston Women Voters data?
 ```{r}
-BostonWomenVoters %>%
+average.age <-BostonWomenVoters %>%
   select(Age, Occupation) %>%
   group_by(Age, Occupation) %>%
-  summarize(mean(Age))
+  summarize(mean(Age), na.rm = TRUE)
 ```
 
 (@) In the `gayguides` data, on average how many locations did each city in South Carolina have between 1970 and 1975?
@@ -292,16 +292,18 @@ ggregions.1980 <- data.frame(
 
 (@)How much did LGTBQ life grow between 1970 and 1980? Can you create a data frame that computes the growth in the number of locations between 1970 and 1980 for every state? For every region? 
 ```{r}
-ggregions.tenyears <- data.frame(
+gg.growth <- data.frame(
   left_join(gayguides, regions, by=c("state"="State.Code")) %>%
   filter(Year == 1970:1980) %>%
-  select(title, state, Year) %>%
-  group_by(state, Year) %>%
-  summarize(count = n())
+  select(title, state, Division, Year) %>%
+  group_by(state, Division, Year) %>%
+  summarize(total_locations = n()) %>%
+  pivot_wider(names_from = Year, values_from = total_locations) %>% 
+  mutate(growth = `1980` - `1970`)
 )
 ```
 
-> Stuck here for now; how do I get it to calculate the growth? Do I use something within the summarize function or do I use mutate and use the difference to calculate the growth and then create a dataframe based on that difference??
+> I am not sure if I did this problem the way you inteded us to, but I had trouble computing growth and skipped it to move onto the section on pivotting. After learning how to pivot_wider, I realized that I could use that function to create columns storing the values of the total locations for every separate year, which would then allow me to calculate growth by subtracting the amount in the 80s column to the amount in the 70s column.
 
 ### `pivot_longer()` and `pivot_wider()`: Converting Wide and Long Data
 
@@ -361,26 +363,57 @@ The implicit question was, "How many locations appear in each year?". The `judge
 
 (@) First, tell me, what is the question you are asking? 
 ```{r}
-
+#The question I am asking is: What are the racial/ethnic and sex demographics of the judges in this dataset?
 ```
 
 (@) Now write some code to address that question. Comment the code with notes that explain your thinking as you go. Use functions like select(), filter(), etc to pair down your dataset and reshape it to address your question. 
 ```{r}
-
+judges.demographics <- data.frame( judges %>%
+  select(Last.Name, First.Name, Gender, Race.or.Ethnicity) %>% #selecting the relevent variables
+  group_by(Gender, Race.or.Ethnicity) %>% #grouping by the variables I am interested in seeing numbers for.
+  summarize(count = n()) %>% #I am using summarize here to count the times that a race/ethnicity appears with a sex (M/F are the only options in this dataset). I chose to count them this way because I am interested in seeing the potential statistical correlations between race/ethincity and sex.
+  arrange(desc(count)) #Here I am arranging the count column by descending so it is easier to read the data. Looking at this data arranged in this way shows us that there are overwhelmingly white males; 3,042 white men compared to the second largest group, 376 white females. This is a huge gap.
+)
 ```
 
 (@) Now ask a question of the `gayguides` data (or another dataset of your choice). What is the question you are asking? 
 ```{r}
-
+data("gayguides")
+#My question is: what type of amenity was the most common for locations in the 1970s?
 ```
 
 (@) Now write some code to address that question. Comment the code with notes that explain your thinking as you go. Use functions like select(), filter(), etc to pair down your dataset and reshape it to address your question. 
 ```{r}
-
+gg.common.amenities70s <- data.frame(
+  gayguides %>% select(title, type, city, state, Year) %>% #Here I am selecting the relevent columns.
+  filter(Year == 1970:1979) %>% #Filtering so that I only have entries from the 70s.
+  group_by(type) %>% #grouping by the type of amenity so I can get a count on that variable.
+  summarize(count = n()) %>% #counting the number of times an amenity appears.
+  arrange(desc(count)) #arranging the data descending so we can see the the most common to least common locations. We see here that bars/clubs were by far the most common amenity type in the 70s.
+)
 ```
+
+> Now I am wondering how this would compare to the most common locations from a different decade, so I altered this code to give me the answer for the most common amenity for entries from the 80s.
+
+```{r}
+gg.common.amenities80s <- data.frame(
+  gayguides %>% select(title, type, city, state, Year) %>%
+  filter(Year == 1980:1985) %>% #I know that the 80s only goes up to '85 from my previous interactions with the dataset.
+  group_by(type) %>% 
+  summarize(count = n()) %>%
+  arrange(desc(count))
+)
+```
+
+> When comparing entries from these two decades, bars/clubs are both the most common location type. However, it is interesting to note that the number of cruising areas significantly increased from the 70s to the 80s, with there being only 467 cruising areas (compared to 1,335 bars/clubs) in the 70s and 1,403 cruising areas (compared to 1,501 bars and clubs) in the 80s. This tells us that there was a rise in the 80s of cruising areas as a popular location type for gayguides entries. This leads to an interesting historical research question: what was the reason for this increased interest in cruising areas in the 80s?
 
 (@) Write a function that filters the gay guides dataset. It should accept 2 arguments: year and state. When passed to the function the function should return only the title, type, state and year for each entry. 
 ```{r}
-
+filter.gg <- function(year, State) { gayguides %>%
+  filter(year == Year) %>%
+  filter(State == state) %>%
+  select(title, type, state, Year)
+}
+CA.80s <- filter.gg(1980, "CA")
 ```
 
