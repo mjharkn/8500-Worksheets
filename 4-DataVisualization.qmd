@@ -1,7 +1,7 @@
 ---
 title: 'Worksheet 4: Data Visualization'
-author: ""
-date: ""
+author: "Mandolyn Harkness"
+date: "03-31-2025"
 ---
 
 _This is the fourth in a series of worksheets for History 8500 at Clemson University. The goal of these worksheets is simple: practice, practice, practice. The worksheet introduces concepts and techniques and includes prompts for you to practice in this interactive document. When you are finished, you should change the author name (above), render your document to a pdf, and upload it to canvas. Don't forget to commit your changes as you go and push to github when you finish the worksheet._
@@ -78,13 +78,18 @@ ggplot(data = gapminder, mapping = aes(x = gdpPercap, y=lifeExp, color=year)) + 
 
 (@) Using the same plot above, can you edit the code to add a trend line? (Hint: You'll need to add another geom)
 ```{r}
-ggplot(data = gapminder, mapping = aes(x = gdpPercap, y=lifeExp, color=year)) + geom_point() + geom_smooth() + labs(x="GDP Per Capita", y="Life Expectency in Years", title="Life Expectency and Per Capita GDP by Year") #added trend line with geo_smooth().
+ggplot(data = gapminder, mapping = aes(x = gdpPercap, y=lifeExp, color=year)) + geom_point() + geom_smooth() + labs(x="GDP Per Capita", y="Life Expectency in Years", title="Life Expectency and Per Capita GDP by Year") #added trend line with geo_smooth(), which I found out about through reading the assigned "Top 50 ggplot2 Visualizations"
 ```
 
 
 (@) The file below contains data about the population of cities in 1930 and their recreation expenditures. Can you create a scatter plot from this data? 
 ```{r}
 rec <- read.csv(file = "https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/Recreation-Expenditures.csv")
+
+rec.plot <- ggplot(data = rec)
+  rec.plot <- ggplot(data = rec, mapping = aes(x = total_expenditures, y = rec$population, color = state))
+    rec.plot + geom_point() + labs(x = "Total Expenditures, USD", y = "Population")
+
 ```
 
 The `geom_point()` function allows us to create scatterplots but its not the only geom within `ggplot2()`.
