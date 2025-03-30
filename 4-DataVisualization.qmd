@@ -114,13 +114,16 @@ ggplot(bwv.data, aes(x = Age)) + geom_histogram()
 ```
 
 (@) By default, `geom_histogram()` is choosing the number of bins. Can you change the number of bins or the bin width? (Hint: How might you look up the options for this function?)
+```{r} 
+ggplot(bwv.data, aes(x = Age)) + geom_histogram() + stat_bin(bins = 50) # Example of more bins having smaller intervals.
+```
 ```{r}
-ggplot(bwv.data, aes(x = Age)) + geom_histogram() + stat_bin(bins = 105) #come back to this, not sure if I did it right.
+ggplot(bwv.data, aes(x = Age)) + geom_histogram() + stat_bin(bins = 5) # Example of less bins resulting in larger intervals.
 ```
 
 (@) Explain, what does changing the number of bins do? 
 
-> 
+> Changing the number bins of bins displays the data in different ranges. So, having a higher number of bins results in the data on age being displayed in smaller intervals, whereas having a smaller number of bins results in larger intervals.
 
 ### Barplots 
 
