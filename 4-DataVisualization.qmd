@@ -264,18 +264,37 @@ ggplot(gg.byyear, aes(x = Year, y = count)) +
 
 (@) Using the state recreation data, can you create a chart that outlines the total expenditures in South Carolina by city?
 ```{r}
-
+sc.rec.data <- recreational.data %>% filter(state == "SC") # Filtering data so it only has entries from SC. 
+ggplot(sc.rec.data, aes(x = city, y = total_expenditures)) +
+  geom_col() + facet_wrap(~population) # I just thought it would be interesting to facet by population here so we could see the population and how it may correlate to the total expenditures in each city.
 ```
 
 (@) Using the gayguides data can you select 5 types of locations and chart the number of each type between 1965 and 1980? 
 ```{r}
+gg.5types <- gayguides %>%
+  filter(grepl("Bathhouses|Hotel|Cruising Areas|Restaurant|Book Store", type) & Year >= 1965 & Year <= 1980) %>%
+  group_by(type, Year) %>%
+  summarize(count = n())
 
+ggplot(gg.5types, aes(x = Year, y = count)) +
+  geom_line() + facet_wrap(~type)
 ```
 
 (@) Using this recreation dataset from last week, can you find the average number of volunteer and paid workers over time? 
 ```{r}
 rec.workers <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/RecreationData-Wide.csv")
 
+avg.recworkers <- rec.workers %>%
+  pivot_longer(cols = starts_with("X"), names_to = "year", values_to = "num_workers") %>% filter(!is.na(num_workers)) %>%
+  mutate(year = as.numeric(str_remove(year, "X"))) %>%
+  pivot_wider(names_from = type_of_worker, values_from = num_workers) %>%
+  mutate(total.paid.workers = `male paid` + `female paid`, total.volunteers = `men volunteer` + `women volunteer`) %>%
+  group_by(year) %>%
+    summarize(avg.volunteers = mean(total.volunteers, na.rm = TRUE), avg.paid.workers = mean(total.paid.workers, na.rm = TRUE), count = n())
+
+ggplot(avg.recworkers, aes(x = year, y = count)) + geom_line() + facet_wrap(~avg.volunteers)
+
+# I gotta fix this.
 
 ```
 
