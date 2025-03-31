@@ -286,13 +286,12 @@ rec.workers <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMetho
 
 avg.recworkers <- rec.workers %>%
   pivot_longer(cols = starts_with("X"), names_to = "year", values_to = "num_workers") %>% filter(!is.na(num_workers)) %>%
-  mutate(year = as.numeric(str_remove(year, "X"))) %>%
   pivot_wider(names_from = type_of_worker, values_from = num_workers) %>%
-  mutate(total.paid.workers = `male paid` + `female paid`, total.volunteers = `men volunteer` + `women volunteer`) %>%
+  mutate(total.paid.workers = `male paid` + `female paid`, total.volunteers = `men volunteer` + `women volunteer`, year = as.numeric(str_remove(year, "X"))) %>% # Had to do this step to convert the year to a numeric and I had to google this to find out how to fix the issue I was getting (graph was blank because there was no numeric range).
   group_by(year) %>%
     summarize(avg.volunteers = mean(total.volunteers, na.rm = TRUE), avg.paid.workers = mean(total.paid.workers, na.rm = TRUE), count = n())
 
-ggplot(avg.recworkers, aes(x = year, y = count)) + geom_line() + facet_wrap(~avg.volunteers)
+ggplot(avg.recworkers) + geom_line(aes(x = year, y = avg.volunteers)) + geom_line(aes(x = year, y = avg.paid.workers))
 
 # I gotta fix this.
 
@@ -303,25 +302,76 @@ In the slots below use the datasets for class (or a dataset of your choice) to c
 
 (@) Plot 1
 ```{r}
+data(BostonWomenVoters) # What is the marital status of these women voters?
 
+bwv.naturalization <- BostonWomenVoters %>%
+  mutate(Marital.Status = case_when(
+    grepl("^single", Court.of.Naturalization, ignore.case = TRUE) ~ "Single",
+    grepl("^widow", Court.of.Naturalization, ignore.case = TRUE) ~ "Widowed",
+    grepl("^married", Court.of.Naturalization, ignore.case = TRUE) ~ "Married"
+  )) %>% # I found out how to do the "^" at the beginning of a string on stack overflow after googling how to utilize something similar to the start_with() function we sometimes use within filter().
+  filter(!is.na(Marital.Status)) %>% # Accounting for missing/NA values since there are plenty in this dataset.
+    group_by(Marital.Status) %>%
+    summarize(count = n())
+  
+BWV.Marital.Status <- ggplot(bwv.naturalization, aes(x = Marital.Status, y = count)) + geom_col()
+
+BWV.Marital.Status
 ```
 
 (@) Plot 1 explanation: 
->
+> For this plot, I wanted to make the historical observation of how many women of different marital statuses were registering to vote. To make this observation, I will be utilizing data in the Court.of.Naturalization column.
+
+There are multiple variations of different observations in the Court.of.Naturalization column and many missing/NA values. To make this more tidy and able to answer our question, I mutated the dataset so that all the different variations of single, married, and widowed would be organized neatly into uniform observations in a new column that I think better describes the observation I am making— "Marital.Status". 
+
+I chose to make a histogram because it seemed like the most fitting plot to visually make the observation since you can see the height of the bars compared to one another. The histogram shows that there are over twice as many single women compared to married women registering to vote, and there are even less widowed women. This results in the historical observation that more single women were registering to vote than women of other marital statuses during this time.
 
 (@) Plot 2
 ```{r}
+data(almshouse_admissions) # I am wondering if I can track the number of admissions over the years documented.
 
+almshouse.years <- almshouse_admissions %>% group_by(Year.Admitted) %>% summarize(count = n())
+ggplot(almshouse.years, aes(x = Year.Admitted, y = count)) +
+  geom_line() + scale_x_continuous(limits = c(1790, 1810)) # I found out about the scale_x_continuous function on stack overflow when I looked up how to limit the year range on the x axis.
+
+almshouse.years
 ```
 
 (@) Plot 2 explanation: 
->
+> I was interested in seeing the number of admissions over the years. I chose a line plot to visually observe this since it gives a good image of amount over time. This one was pretty straight forward to make, as I just grouped the data by year and summarized to get a count of the amount of admissions every year. 
+
+When we look at the plot, it shows a sharp increase in admissions starting in 1800, although we do see some admissions in the 1790s. THere is also notably a decrease in admissions in 1802 until it spikes back up again in 1803. This tells us that more patients were being admitted to the almshouse in 1801 and 1803 than any of the other years documented. You could ask the historical question of what was going on with the institution during these years that resulted in these increases in admissions.
 
 (@) Plot 3. For this one, try a different kind of plot. [Check out a useful gallery here.](https://github.com/regan008/DigitalMethodsData/blob/main/raw/RecreationData-Wide.csv)
 (For this week, avoid choosing a map. We'll talk more about maps and geographic data over the next two weeks.)
 ```{r}
+data(charlestonManumissions) # For this data, I am interested in making a historical observation on what the most common motives were for manumision.
+
+manumissions.motives <- charlestonManumissions %>% 
+  mutate(Motives = case_when(
+    grepl("Moral", Motive) ~ "Moral",
+    grepl("Financial", Motive) ~ "Financial",
+    grepl("Foreign", Motive) ~ "Foreign",
+    grepl("Sexual", Motive) ~ "Sexual",
+    grepl("Outside Purchase", Motive) ~ "Outside Purchase",
+    grepl("Restricted", Motive) ~ "Restricted",
+    grepl("Self-Purchase", Motive) ~ "Self Purchase"
+  )) %>%  
+    group_by(Motives) %>%
+    summarize(count = n())
+
+ggplot(manumissions.motives, aes(x = "", y = count, fill = Motives)) +
+geom_bar(width = 1, stat = "identity") +
+coord_polar(theta = "y") +
+labs(fill = "Motives", x = NULL, y = NULL, title = "Motives for Manumission")
+
+# Found all of the syntax for this on the 50 plots site from the syllabus.
 
 ```
 
 (@) Plot 3 explanation: 
->
+> I was curious here about observing and comparing the amount of motivations for manumission among formerly enslaved people. I wanted to use a different sort of chart than the ones we had previously used in this worksheet and I chose a pie chart since I think it does a good job at visualizing difference in volume.
+
+I first had to mutate the data because there were entries that had multiple motives and I wanted to get a count of each individually, so I had to make a new column with appropriately separated observations. Then, I grouped by that new column and did a count with summarize to get the number of each occupation in this dataset. I then made a pie chart out of the data using syntax from the site I mentioned above. I wasn't sure about all of the settings, so I just followed the example of the code from the website and I think it worked fine.
+
+Looking at the pie chart shows that the "moral" motive was the most common by far, with self purchase and outside purchase falling behind. It is likely that moral was combined with a fair amount of self and outside purchases, so I think it is important to keep that in mind. This leads to the historical question of what exactly was this "moral" motive referring to (would require outside research) and how does that help explain the volume of moral motives for manumission? 
