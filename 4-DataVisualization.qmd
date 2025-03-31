@@ -137,20 +137,76 @@ ggplot(sc.rec, aes(x = state, y = state.expenditures )) +
 
 (@) Using the `gayguides` data, create a bar chart that shows the number of locations in 1980 in South Carolina, Georgia, and North Carolina. 
 ```{r}
+southern.states.data <- gayguides %>%
+  filter(state %in% c("SC", "GA", "NC") & Year == 1980)
 
+gg.southernstates.1980 <- southern.states.data # I am not sure why (I may be doing something wrong or missing a step in the next lines), but it gives me an error about trying to supply a data frame if I skip this step. If I do this, though, it works.
+```
+
+```{r}
+SouthernStates.1980 <- gg.southernstates.1980 %>%
+  group_by(state) %>%
+  summarize(num.locations = n()) 
+
+
+SouthernStates.1980.plot <- ggplot(SouthernStates.1980, aes(x = state, y = num.locations)) +
+      geom_col()
+
+SouthernStates.1980.plot
 ```
 
 (@) Using the `gayguides` data, plot the number of religious institutions in each state.
+
 ```{r}
+# I didn't know for this if you meant ALL of the states in the gayguides database or SC, GA, and NC from the previous one, so I just did both. This is the one for all of the states:
+
+gayguides.ri <- gayguides %>% filter(grepl("Religious", type))
+  gg.ri.data <- gayguides.ri
+
+State.ReligiousInstitutions <- gg.ri.data %>% 
+  group_by(state) %>%
+  summarize(num.locations = n())
+
+State.ReligiousInstitutions.Plot <- ggplot(State.ReligiousInstitutions, aes(x = state, y = num.locations)) +
+  geom_col()
+
+State.ReligiousInstitutions.Plot
+
+```
+
+```{r}
+# And here is the one for just SC, GA, and NC:
+
+SouthernState.RI <- gg.ri.data %>%
+  filter(state %in% c("SC", "GA", "NC")) %>% 
+  group_by(state) %>%
+  summarize(num.locations = n())
+
+SouthernState.ReligiousInstitutions.Plot <- ggplot(SouthernState.RI, aes(x = state, y = num.locations)) +
+  geom_col()
+
+SouthernState.ReligiousInstitutions.Plot
 
 ```
 
 (@) Formulate a question based on a dataset of your choice. That question should be something that would be appropriately answered by a bar chart. What is the question you want to explore?
 
-<
+< A question I could ask about the dataset of the number of religious in all of the gayguides states is: 
+    "What is the correlating variable (or variables) to the number of religious institutions?" 
+      You would need to make more datasets to answer this question, and it could also lead to historical questions such as "Why are California, Florida, and Texas the top 3 states with religious institutions?" and/or "Why do Idaho, Mississippi, and West Virginia have the least despite being fairly religious states?"
 
 (@) Now write the code to answer that question and use comments (`#`) to explain your thinking as you go.
 ```{r}
+# I have a feeling that the correlation is the amount of entries in each state. If we simply look at the number of entries for the states I asked the question about, we can determine whether or not this is true:
+
+gg.filtered <- gayguides %>%
+  group_by(state) %>%
+  summarize(num.locations = n()) # Basically, I am filtering the gayguides data that it only includes the states I asked the question about. This is because I am interested in seeing if the correlation between the number of religious institutions and the number of institutions in general.
+
+GG.Filtered.Plot <- ggplot(gg.filtered, aes(x = state, y = num.locations)) +
+  geom_col() # Here, I am making a barplot so I can visualize the data.
+
+GG.Filtered.Plot # Looking at this visualized data, it seems like there is a slight correlation between the amount of religious institutions to the amount of locations in all of the gayguides data, but it is not as strong as I thought it would be because there are cities with more locations in general than others that have comparitively less religious institutions, and vice versa. This tells me that it is perhaps a stronger correlation, or that the reason for the amount of religious institutions in each state is not represented in the dataset, and more outside research has to be done to answer the question fully.
 
 ```
 
