@@ -103,7 +103,8 @@ The function `unnest_tokens()` also has an option called token. Tokenizing by wo
 
 (@)Use the documentation to tokenize the dataset into sentences: 
 ```{r}
-# read documentation then do, also you cannot tokenize a dataset you already tokenized, you have to use the full dataset :3
+sotu_sentences <- sotu_whole %>%
+  unnest_tokens(sentece, text, token = "sentences")
 ```
 
 We've talked about n-grams loosely in class. But lets define it more formally. An n-gram is a contiguous sequence of n items from a given sample of text or speech. The n stands for the number of items. So for example, a bi-gram is sets of two words. 
@@ -139,12 +140,13 @@ There are stopwords that come with the `tidytext` package.
 stop_words
 ```
 This is just one example of stopwords. You can find other lists such as stopwords in other languages or [stopwords designed specifically for the 19th century.](https://www.matthewjockers.net/macroanalysisbook/expanded-stopwords-list/) Its also possible you may want to edit the list of stopwords to include some of your own. For example, if we wanted to add the word, "America" to the stopwords list we could use add_row to do so: 
+
 ```{r}
 stop_words_custom <- stop_words %>% add_row(word="America", lexicon="NA")
 ```
 
 
-For now lets just remove the default stopwords. The easiest way to do that here is to do an anti-join. We join and return all rows from our table of tokens tidy_sotu where there are no matching values in our list of stopwords. 
+For now lets just remove the default stopwords. The easiest way to do that here is to do an anti-join. We join and return all rows from our table of tokens tidy_sotu where there are no matching values in our list of stopwords.
 
 ```{r}
 tidy_sotu_words <- tidy_sotu %>% 
@@ -195,8 +197,7 @@ tidy_sotu <- sotu_whole %>%
 ```
 (@) Before we move forward, take a minute a describe the chunk of code you just ran. What does each section do and how does it reflect the workflow for a topic modeling project? What are the important steps that are unique to topic modeling? 
 
-> 
-
+> The first section of the code is making a dataframe of the sotu meta data; then, we make a directory of the file paths so they can be read by the readtext() function. In the next step, we read the text in the files and the output into the sotu_texts dataframe in the "text" column. We're then creating a separate dataframe of the meta data that we got from the csv and stored in the meta dataframe. This is because it is necessary for us to not only know the document id and have all of the text, but also have the information on the president, dates, etc so we can perform historical analysis on the data. We are then taking the sotu metadata and sorting it by president so we can group relevent texts together which makes analysis of the dataframe easier. Next, we combine the organized metadata with our sotu_texts dataframe. This makes it so that the actual text of the speech/address is next to the relevent president and all of its metadata. Next, we are tokenizing words from the text so that we can see which words are associated with each president's addresses—this allows us to ask historical questions about why certain presidents are using certain words. An important aspect of this code is that we are filtering out the stopwords so that it contains only unique words, making it much more useful for analysis. Creating this dataframe also prepares our sotu texts for analysis via tf-idf because we can now calculate the frequency of each individual word, which we wouldn't have been able to do without the creation of this dataframe (tidy_sotu).
 
 The most basic kind of analysis we might be interested in doing is counting words. We can do that easily using the `count()` function: 
 ```{r}
@@ -204,7 +205,7 @@ tidy_sotu %>%
   count(word, sort = TRUE)
 ```
 
-Now we know that the most used word in state of the union speeches is government. But what if we wanted to look at when presidents use the words war versus the word peace? 
+Now we know that the most used word in state of the union speeches is government. But what if we wanted to look at when presidents use the words war versus the word peace?
 ```{r}
 tidy_sotu %>%
   filter(word %in% c("war", "peace")) %>% 
@@ -234,7 +235,7 @@ sotu.length <- tidy_sotu %>%
 
 (@) Think back to the metadata that we loaded about these speeches. Why are the STOU addresses for more modern president's shorter than others? (For example Bush vs Teddy Roosevelt)
 
-> Not all of them are speeches not addresses
+> Not all of them are speeches, many are also written out addresses. 
 
 (@) Filter the dataset to address this discrepancy and the recreate these statistics: 
 ```{r}
@@ -307,6 +308,13 @@ sotu.tf.idf %>% arrange(desc(tf_idf))
 (@) Pick a president who served more than one term. Filter the dataset and generate both raw word counts and tf-idf scores for that president. What words are most significant in each method? Why and what does that tell you about that president and their administration?  
 
 ```{r}
+fdr_tfidf <- tidy_sotu %>%
+  filter(president == "Franklin D. Roosevelt") %>%
+    count(doc_id, word, sort = TRUE) %>%
+      bind_tf_idf(doc_id, word, n)  %>%
+      arrange(desc(tf_idf))
+
+head(fdr_tfidf)
 
 ```
 
@@ -342,7 +350,16 @@ sotu_word_pairs %>%
 ```
 (@) Create a network graph that shows the relationship between words that appear between 125 and 175 times.
 ```{r}
+sotu_word_pairs  %>% filter(n >= 125 & n <= 175) %>%
+  graph_from_data_frame() %>%
+  ggraph(layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "tomato") +
+  geom_node_point(size = 5) +
+  geom_node_text(aes(label = name), repel = TRUE,
+    point.padding = unit(0.2, "lines"), max.overlaps = 100) +
+      theme_void()
 
+# When I ran this, there were a lot of overlapping lines and it suggested I add max.overlaps, but I really cannot notice a difference when I change it, and I tested some different numbers (bigger and smaller) and didn't see much of a difference.
 ```
 
 ## Analyzing Historical Journals
