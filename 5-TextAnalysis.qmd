@@ -235,11 +235,23 @@ sotu.length <- tidy_sotu %>%
 
 (@) Think back to the metadata that we loaded about these speeches. Why are the STOU addresses for more modern president's shorter than others? (For example Bush vs Teddy Roosevelt)
 
-> Not all of them are speeches, many are also written out addresses. 
+> Not all of them are speeches, many are also written out addresses. This may result in differences in the words use because of how they are employed differently in a written document vs. speaking them aloud.
 
 (@) Filter the dataset to address this discrepancy and the recreate these statistics: 
 ```{r}
-
+sotu_written <- tidy_sotu %>%
+  filter(sotu_type == "written") %>%
+  count(president, doc_id) %>%
+  group_by(president) %>%
+  summarize(avg_words = mean(n)) %>%
+  arrange(desc(avg_words)) 
+ 
+ sotu_speech <- tidy_sotu %>%
+  filter(sotu_type == "speech") %>%
+  count(president, doc_id) %>%
+  group_by(president) %>%
+  summarize(avg_words = mean(n)) %>%
+  arrange(desc(avg_words)) 
 ```
 
 ### Term Frequency
@@ -269,7 +281,22 @@ tidy_sotu %>%
 ```
 (@) The code above is commented to help you follow it. Walk through the code above, and explain what each line does in your own words. If its a function you are unfamiliar with, look up the documentation.
 
-> 
+> I am going to copy the code in my explanation this time just so it is clearer which lines I'm talking about:
+
+tidy_sotu %>% # Here, we're taking the tidy_sotu dataset since it is already primed for further analysis
+
+  count(president, word)  %>%  # We are counting the total number of words per document; this is important so that we can get the term frequency for each document rather than another variable (like president or type) so we can make our analysis more specific.
+
+  group_by(president) %>% # Grouping by president so that we can perform a mutate on the sorted data.
+
+  mutate(n_tot = sum(n),
+         term_freq = n/n_tot) %>% # Adding another column that gets the term frequency per document by getting the total word count (via sum(n)). We then add a second column for term_freq, which we calculate by taking the n_tot column (total number of words) and then using it to divide the occurences of each specific word we have in the tidy_sotu dataset. This results in the term_freq being calculated and a new column is added that tells us what that term_freq is.
+
+  arrange(desc(term_freq)) %>% # Sorting by term frequency so that it is easier to compare each one (from highest to lowest).
+
+  top_n(1) %>%  # Making it so that we see the top term_freq for every president. We now see the president, their top word, the times it occurs in their speech, the times it occurs in total, and then the calculated term frequency.
+
+  print(n = Inf) # Prints the rows and makes them visible and ready for tech analysis.
 
 ### TF-IDF
 
@@ -317,6 +344,12 @@ fdr_tfidf <- tidy_sotu %>%
 head(fdr_tfidf)
 
 ```
+
+> Looking at the tf_idf score for FDR's words, there are some historical observations we can make when looking at the year the speech was written/given. One of the most obvious observations we can see is differces in tdif scores based on the era of his presidency. So, during the 30s when the Great Depression was in full swing, we see a higher frequency of words like exploitation, readjustment, debts, balances, suffered, economics, etc. This tells us his primary concern was the economy, assessing it, and repairing it. 
+
+As we look at documents from the 40s, we see a clear shift in the language being commonly used. Words like deceit, dictator, disrupted, aircraft, british, threatened, etc. This shows us FDR's primary concern has shifted to focusing on America's involvement in WW2.
+
+This observation tells us not only that FDR's focus shifted rather drastically, and we can see the effects of these major historical events and the language he uses to communicate them— very intense language to emphasize to the American people that these two crises must be solved for America to heal and prosper.
 
 ### Co-Occurance
 Co-occurrence gives us a sense of words that appear in the same text, but not necessarily next to each other. It shows words that are likely to co-occur. Note that this is different than topic modeling, which we'll discuss next week. 
@@ -381,10 +414,78 @@ mb <- readtext(paste(getwd(), "/txt/*.txt", sep=""))
 
 (@) Add code chunks below and intersperse text to explain what you are doing and why.
 
+```{r}
+mb_whole <- metadata %>% 
+arrange(Year) %>% 
+bind_cols(mb) %>% 
+as_tibble()
 
+# Combining the text with the metadata so everything is together.
 
+head(mb_whole)
+```
 
+> Since this dataset covers several different eras, I am interested in separating them and then looking at the term frequency for words in these different eras to see if it can give us any insight into how the historical events going on in each period was reflected in the texts. So, I will be dividing the datasets into different eras using the filter function.
 
+```{r}
+mb_progressive <- mb_whole %>%
+  filter(Year >= 1895 & Year < 1920)
+
+mb_prog_tfidf <- mb_progressive %>%
+unnest_tokens(word, text) %>%
+anti_join(stop_words) %>%
+count(Year, word, sort = TRUE) %>%
+bind_tf_idf(word, Year, n) %>%
+arrange(desc(tf_idf)) %>%
+
+head(mb_prog_tfidf)
+```
+
+> Here, I have filtered the md texts so that it only shows those from the progressive era. 
+
+```{r}
+mb_ww1 <- mb_whole %>%
+  filter(Year >= 1914 & Year <= 1918)
+
+mb_ww1_tfidf <- mb_ww1 %>%
+unnest_tokens(word, text) %>%
+anti_join(stop_words) %>%
+count(Year, word, sort = TRUE) %>%
+bind_tf_idf(word, Year, n) %>%
+arrange(desc(tf_idf))
+
+head(mb_ww1_tfidf)
+```
+
+```{r}
+mb_20s <- mb_whole %>%
+  filter(Year >= 1920 & Year <= 1929)
+
+mb_20s_tfidf <- mb_20s %>%
+unnest_tokens(word, text) %>%
+anti_join(stop_words) %>%
+count(Year, word, sort = TRUE) %>%
+bind_tf_idf(word, Year, n) %>%
+arrange(desc(tf_idf))
+
+head(mb_20s_tfidf)
+```
+
+```{r}
+mb_depression <- mb_whole %>%
+  filter(Year >= 1930)
+
+mb_depression_tfidf <- mb_depression %>%
+unnest_tokens(word, text) %>%
+anti_join(stop_words) %>%
+count(Year, word, sort = TRUE) %>%
+bind_tf_idf(word, Year, n) %>%
+arrange(desc(tf_idf))
+
+head(mb_depression_tfidf)
+```
+
+> 
 
 (@) Choose one of the datasets from this repository or use one of your own: https://github.com/regan008/8510-TextAnalysisData. Note that there are both zip files with .txt files as well as separate metadata files for each publication in this repo. 
 
