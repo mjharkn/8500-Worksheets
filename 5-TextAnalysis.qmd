@@ -436,12 +436,14 @@ unnest_tokens(word, text) %>%
 anti_join(stop_words) %>%
 count(Year, word, sort = TRUE) %>%
 bind_tf_idf(word, Year, n) %>%
-arrange(desc(tf_idf)) %>%
+arrange(desc(tf_idf))
 
 head(mb_prog_tfidf)
 ```
 
-> Here, I have filtered the md texts so that it only shows those from the progressive era. 
+> Here, I have filtered the md texts so that it only shows those from the progressive era. I am also tokenizing everything. 
+
+> Some words occuring fairly frequently are parry, disengage, raquet, backward, forward, etc. Fencing is a topic that comes to mind when I look at these words.
 
 ```{r}
 mb_ww1 <- mb_whole %>%
@@ -457,6 +459,8 @@ arrange(desc(tf_idf))
 head(mb_ww1_tfidf)
 ```
 
+> Here I'm filtering so it is only from the WWI era. Some words occuring here that aren't as common in the previous dataset are forcible, intuition, unfitness, calories, deutsche, italian, etc. There seems to be more internationally related discussion happening, along with a greater focus on the physical health of the body, worrying about weight, etc.
+
 ```{r}
 mb_20s <- mb_whole %>%
   filter(Year >= 1920 & Year <= 1929)
@@ -470,6 +474,8 @@ arrange(desc(tf_idf))
 
 head(mb_20s_tfidf)
 ```
+
+> Here, I'm sorting so we only see text from issues published during the 20s. Some words of note here are sewage, ozone, ringworm, uterus, abortion, menstruatiion, etc. There seems to be more focus on the body and the outside things that are having an effect (potentially a negative one) on the body.
 
 ```{r}
 mb_depression <- mb_whole %>%
@@ -485,9 +491,170 @@ arrange(desc(tf_idf))
 head(mb_depression_tfidf)
 ```
 
-> 
+> Here I am sorting so we only have issues from the depression. Some words we see here that are unique are nicotine, asbestos, smoker, cigarette, lungs, etc.
+
+>> We can now draw some historical conclusions we can draw from the words in this dataset and their tdifs. Based on the observations I made earlier in this script about the unique words occuring during issues from different time frames specific to an historical era, we see that major outside events and movements are changing how people are talking about wellness and recreation. During the progressive era there is a big focus on recreation, especially activities like fencing. From there, we move to the WWI era and there are more militaristic terms being used, which shows me that the war is resulting in a greater interest in regimented activities and exercising. There also is mention of nutrition and calories, perhaps due to rationing during the war. We shift back to more recreational activities in the roaring twenties, but there is also an increased interest in women's health. Furthermore, it seems that outside factors and their potential negative effects on health are being considered more, such as the ozone, sewage management, and ringworm. Considering the Spanish flu pandemic, I feel that this may have caused a shift in wellness magazines being interested in protecting oneself from the harmful effects of the environment around them. This only becomes more prevelent when we move to the depression, where cigarettes and smoking seem to be a big issue. There is a shift towards focusing on personal health rather than recreational activities. I see this shift as potentially reflecting the attitudes of Americans during the depression, as people may have been turning towards unhealthy habits to cope, perhaps, and a subsequent encouragement to focus on preserving ones personal physical health in trying times, where many are not getting proper nutrition.
 
 (@) Choose one of the datasets from this repository or use one of your own: https://github.com/regan008/8510-TextAnalysisData. Note that there are both zip files with .txt files as well as separate metadata files for each publication in this repo. 
 
 Write a text analysis script that explores and asks questions of the texts. At the end write a summary that analyzes the results you found. Be sure to rely on your historical knowledge. What can we learn from applying the strategies you've learned in this worksheet to analyze these documents?
 
+> I chose to perform text analysis on the Women's Citizen magazines which include entries from June, July, and August of 1918.
+
+> First, I am going to prepare the data.
+
+```{r}
+download.file("https://github.com/regan008/8510-TextAnalysisData/raw/423e2ec8c0f82b865cdfd09ef0a8ddead51d7292/TheWomanCitizen.zip", "TheWomanCitizen.zip")
+unzip("TheWomanCitizen.zip")
+
+metadata <- read.csv("https://github.com/regan008/8510-TextAnalysisData/raw/423e2ec8c0f82b865cdfd09ef0a8ddead51d7292/WomanCitizenMetadata.csv")
+
+wc <- readtext(paste(getwd(), "TheWomanCitizen/*.txt", sep = "/"))
+
+# Downloading all the files and then creating data frames in my environment.
+```
+
+```{r}
+wc_whole <- metadata %>%
+arrange(month) %>%
+bind_cols(wc) %>%
+as_tibble()
+
+# Combining both datasets to create an entire one with the text and the metadata.
+```
+
+```{r}
+tidy_wc <- wc_whole %>%
+  unnest_tokens(word, text) # tokenizing the data
+```
+
+
+```{r}
+tidy_wc_words <- tidy_wc %>%  anti_join(stop_words)
+
+tidy_wc_words <- tidy_wc_words %>% filter(!grepl("[0-9]", word)) # removing stopwords and numbers, decreasing the size of the dataframe.
+
+stop_words_custom <- stop_words %>% add_row(word="women", lexicon="NA") %>% add_row(word="woman", lexicon="NA") %>% add_row(word="avenue") %>% add_row(word="citizen") %>% add_row(word="individual") %>% add_row(word="cents") # I went back and added the words cent too because I noticed it was occuring a lot and I didn't really see its relevance, so I thought it may be an issue with the OCR.
+
+tidy_wc_words <- tidy_wc_words %>%
+  anti_join(stop_words_custom)
+  # I did this because I noticed that woman and women were the most common words, which they obviously would be since it is the "Woman Citizen"
+```
+
+```{r}
+tidy_wc_words %>%
+ mutate(word_stem = wordStem(word)) #getting word stems
+```
+
+> Now that my words are prepped for analysis, I am first going to ask what was the primary concern of this magazine? Obviously we can tell from the title that it is concerned with women and their role as American citizens, but what is its main focus? I am just going to do a basic word count to answer this broadly.
+
+```{r}
+tidy_wc_words %>%
+  count(word, sort = TRUE)
+```
+
+> Getting the word count shows us that suffrage, war, citizen, york, amendment, national, time, vote, united, and association are the top ten words. This tells us that the women's citizen magazine during this time was discussing women's rights relating to government, particularly the right to vote. This is pretty basic and just gives us a general idea of what the magazine is about. It also lines up with the historical context, given that the 19th amendment would be passed about a year later following the women's suffrage movement.
+
+> Now that we have an idea on common issues for these magazines, I am interested in looking at whether or not these concerns shifted based on the month the magazine was published. I am going to answer this by first looking at the term frequency in each month.
+
+
+```{r}
+wc_tf_month <- tidy_wc_words %>%
+count(month, word, sort = TRUE) %>%
+group_by(month) %>%
+mutate(total_words = sum(n), term_frequency = n / total_words) %>%
+slice_max(n, n = 10) # Getting only the top ten words for each month
+ungroup() %>% arrange(month)
+
+head(wc_tf_month)
+```
+
+```{r}
+ggplot(wc_tf_month, aes(x = reorder(word, -n), y = n, fill = month)) +
+geom_col(show.legend = FALSE) +
+facet_wrap(~month, scales = "free_y") + 
+theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+> Looking at this, it seems that there really wasn't a large shift in topics from month to month. Given that these magazines only span three months, this is not surprising. What is interesting, however, is that war remains one of the top terms throughout all three months. Given that America was still in WWI at the time these were published, this makes sense. It also tells us that this magazine, and perhaps the women's suffrage movement as a whole, was concerned with the war and connected it to their right to vote.
+
+> Since there didn't seem to be much of a difference between common terms for each month, I want to find out what terms are unique to each month's publications. I will do this by getting the tf-idf scores for each month.
+
+```{r}
+wc_monthly_tfidf <- tidy_wc_words %>%
+count(month, word, sort = TRUE) %>%
+bind_tf_idf(word, month, n) %>%
+arrange(desc(tf_idf))
+
+head(wc_monthly_tfidf)
+```
+
+> Now that I have the monthly tfidf scores, I want to first narrow it down to a smaller number (I'll do the top ten).
+
+```{r}
+wc_top_tfidf <- wc_monthly_tfidf %>%
+group_by(month) %>%
+filter(rank(desc(tf_idf)) <= 10) %>% # Getting the top ten words based on the tdif score for each month.
+ungroup() %>% arrange(month)
+
+head(wc_top_tfidf)
+``` 
+
+> Now, I want to get a visualization in the form of a bar graph. 
+
+```{r}
+ggplot(wc_top_tfidf, aes(x = reorder(word, tf_idf), y = tf_idf, fill = month)) +
+geom_col(show.legend = FALSE) + 
+facet_wrap(~month, scales = "free_y") +
+theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+> Looking at the tdif scores gives us some idea of how the magazines shifted focus based on month. Honestly, some of these are hard for me to decipher and actually reading the magazine would be necessary. In June and July, there seems to be more focus on international affairs, with Hawaii and India being unique words. July seems to have more discussion of the federal government, with unique words being republicans, democrats, commerce, and qualifications. August is the most difficult for me to decipher, because it seems that there is a focus on people, with names like Jake, Jinnie, and Tiffany being unique, along with familial words like uncle and aunt. This shows me that issues during this month were focusing perhaps on individual stories, whereas the previous two months were more focused on international affairs and the federal government. 
+
+> Historically, I think that this shows us that the women's suffrage movement was not solely interested in simply earning the right to vote, but was also aiming to have women be invovled in politics, having a say in both national and  international affairs.
+
+> Next, I am interested in seeing how these women are discussing suffrage. How are they encouraging women to earn suffrage? To do this, I want to get wordpairs for words associated with "suffrage". I feel that this is a better, more narrow question because there are too many word pairs. I am choosing the word suffrage because I know that it is one of the most common words in the magazines and seems to be the main focus of this publication.
+
+```{r}
+wc_suffrage_pairs <- wc_whole %>%
+  unnest_tokens(word, text) %>%  
+  filter(!word %in% stop_words_custom$word) %>% 
+  filter(!grepl("[0-9]", word)) %>%
+  pairwise_count(word, doc_id, sort = TRUE) %>%
+  filter(item1 == "suffrage" | item2 == "suffrage") # I am filtering here so that I only see wordpairs associated with suffrage.
+
+  # I am getting word pairs here. I am filtering out numbers as well.
+```
+
+> There are a bit too many word pairs here to form any meaningful analysis, so I am going to limit it to ones that only occur 10 or more times.
+
+```{r}
+wc_pairs_filtered <- wc_pairs %>% 
+filter(n >= 10) %>% # Filtering here so that the amount of words I am going to plot is more manageable.
+slice_max(n, n = 5) # Keeping only the top 5 pairs so that the visualization is more managable.
+
+
+wc_pairs_filtered
+```
+
+
+> Although this amount is more manageable, it is still way too much to analyze without some sort of visual aid, so I am going to create a network graph to provide that visualization.
+
+```{r}
+wc_pairs_filtered %>%
+  graph_from_data_frame() %>%  
+  ggraph(layout = "fr") + 
+  geom_edge_link(aes(edge_alpha = n, edge_width = n), edge_colour = "tomato") + 
+  geom_node_point(size = 5) + 
+  geom_node_text(aes(label = name), repel = TRUE, point.padding = unit(0.2, "lines")) +
+  theme_void() 
+```
+
+> Some interesting words we see here associated with suffrage are writing, journal, book, and published. These tell me that these magazines may have been encouraging the promotion of suffrage through writing and publishing journals, books, pamphlets, etc. 
+
+Furthermore, another word I find interesting as a common pair with suffrage is "white". This tells me that this magazine was directed towards a white audience, and likely did not advocate for the voting rights of black women. This informs us of a broader historical issue with the women's suffrage movement during the early 20th century— it was limited to white women.
+
+>> Conclusions
+
+Via text analysis of The Women's Citizen magazines, we have made several observations: the primary concern of this publication (suffrage), the secondary concern (war), that discussions of international affairs and the federal government were common, that suffrage was encouraged to be promoted by women through not just protests, but writings and publications, and, finally, that this publication was made for white women only. These conclusions reveal not only tell us about this publication, but offer insight into the 
+women's suffrage movement as a whole, its motivations, and its actions. 
