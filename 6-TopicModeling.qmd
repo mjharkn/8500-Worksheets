@@ -265,7 +265,7 @@ mb.dtm <- tidy.mb.words %>%
 ```
 
 ```{r}
-mb.lda <- LDA(mb.dtm, k = 25, control = list(seed = 32148)) #I made a new seed because I didn't know if it would mess up if I didn't.
+mb.lda <- LDA(mb.dtm, k = 25, control = list(seed = 54321)) # Not sure if I am supposed to change the seed here but I just kept it the same and re-ran it.
 ```
 
 ```{r}
@@ -286,12 +286,17 @@ mb.top.terms %>%
   scale_y_reordered()
 ```
 
+> Adding custom stopwords to this model clears up the topics more and gives a better idea of the focus of this publication. There is a notable interest in physical education, particularly in areas like gymastics and fencing. A lot of these physical exercises also seem to be related to the upper body, with arm exercises being a common topic. There are also many topics relating to these activities in schools and children. These observations are historically significant because it shows us that during the late 19th and early 20th centuries in America, there was an increased interest in establishing physical locations and organizations for exercise and acitivity. This reflects a general shift in attitudes toward physical exercise as something recreational and communal. There is also a clear concern with the health of children during this time period, as this physical education is expanding to them and making its way into the school system during this time. Based on my limited knowledge of US history during this time, I am going to observe that the Progressive Era influenced these concerns for physical education and wellness of American people. One of the ways I know that Americans responded to the negative effects of the Second Industrial Revolution was by encouraging the physical wellness of people. This was especially true in cities— physical education in Chicago is a topic picked out by this model that reflects this. People in cities with industrial economies were encouraged to prioritize their health to fend off the negative health effects of industrial factory work.
+
 (@) Can you create a topic model for just the documents in the 1920s? How does that change the model? 
 ```{r}
 mb.metadata.twenties <- mb.metadata %>%
   filter(Year >= 1920 & Year < 1930)
 
-mb.twenties <- full_join(mb.metadata.twenties, mb.whole, by = c("Filename" = "doc_id"))
+mb.metadata.twenties <- mb.metadata.twenties %>%
+  mutate(Filename = paste0("MB_", Filename))
+
+mb.twenties <- full_join(mb.metadata.twenties, mb.whole, by = c("Filename" = "Filename"))
 
 tidy.mb.twenties <- mb.twenties %>%
   unnest_tokens(word, text) %>%
@@ -316,7 +321,7 @@ head(mb.twenties.topics) # Getting the topics for the 1920s
 ```
 
 ```{r}
-mb.twenties.top.terms <- mb.topics %>%
+mb.twenties.top.terms <- mb.twenties.topics %>%
   arrange(desc(beta)) %>%
   group_by(topic) %>% slice(1:5)
 
@@ -328,6 +333,8 @@ mb.twenties.top.terms %>%
   scale_y_reordered()
 
 ```
+
+> There is a decent amount of overlap with the topics for the entire corpus and the topics for only the twenties. However, there are two topics that are notably different. The first is topic 3, which deals in games relating to physical activity. This tells me that there was likely an increased interest in physical recreation for fun. Pulling again from my knowledge of US history during this time period, there was an increased interest in sports among the American people during the 20s. I see this topic as reflecting this shift. The second notable difference is topic 10, which I interpret as being about military school/training. An increased interest in physical activity in schools for the purpose of preparing future generations for military service makes sense during the 20s since America was just exiting WWI. Therefore, this altered model gives us a better idea of the shifting attitudes towards recreational activity (associating it with fun and that it is something which can be enjoyed both by participants and viewers) and the goals of physical education programs (which in this case/time period are militaristic).
 
 (@) Now, choose one of those datasets (from last worksheet), use the same code from last week to download that data, build a topic model about it, and then see what you can say about it historically. You should be able to use topic modeling to address two of the research questions provided:
 
