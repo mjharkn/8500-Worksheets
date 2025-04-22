@@ -110,6 +110,9 @@ august.vote <- models[["August"]][[c("vote", "women"), average = FALSE]]
 plot(august.vote.vector, type = "n")
 text(august.vote.vector, labels = rownames(august.vote.vector))
 
+# For these first plots, there is a notable shift in focus in July and August towards what I believe to be the war effort. 
+# I am making this observation based on words like “men”, “support”, “national”, “war”, “help”, “service”, “home”, and “country” being clustered together in July and August. 
+# This shift makes sense, since these were the months leading up to the end of WWI. 
 
 ## Getting most common words for a group of terms; I am using terms associated with women and suffrage. I am also interested in comparing words associated with physical (protest) and written (write) action just to compare. 
 
@@ -144,6 +147,11 @@ high_similarities_to_women_vote %>%
     prcomp() %>%
     biplot(main = "Projection of women and suffrage for August 1918")
 
+# For this plot, one thing overall I was interested in was seeing was seeing what type of action/activism The Woman Citizen encouraged. I chose to include protest and write. 
+# These plots showed me that across all of the months, there were more words clustered around protest than write. 
+# This tells me that this publication prioritized promoting more direct and physical activism like protesting and marching over written activism. 
+# Another observation is that there is a continued focus on supporting men and the war effort that is present throughout all months. 
+# Words like “world”, “war”, “power”, “men”, “support”, “service”, “country”, and “children” give a good idea of the rhetoric being used; there is a focus on women supporting the war effort, the country, and the family.
 
 ## I am interested because women and men always seem to be consistently close throughout all the months. I am interested now in seeing how this publication talks about women vs men and whether or not there is any variation across months, so I am going to find the most common words associated with each.
 
@@ -187,40 +195,18 @@ ggplot(aug.word.scores %>% filter(abs(gender.score) > .33)) +
     geom_bar(aes(y = gender.score, x = reorder(word, gender.score), fill = gender.score < 0), stat = "identity") +
     coord_flip() +
     scale_fill_discrete("Indicative of gender", labels = c("Feminine", "masculine")) +
-    labs(title = "Gender Binary Words for July 1918")
+    labs(title = "Gender Binary Words for August 1918")
 
+# Since men seem to be consistently appearing in this publication, I am interested in seeing how the text talks about men. 
+# Something that stands out right away is how many more words associated with men entries from June had in comparison to July and August. 
+# Furthermore, although there is a notable shift in July and August towards feminine words, these words (i.e. “military”, “vet”, “hope”, “father”, “serve”, etc.) are still largely focused around the war effort, they remain associated with women. 
+# This demonstrates that despite the rhetoric of The Woman Citizen being dedicated in the months of July and August to a “masculine” cause, the audience was still women. 
+# It is still clear that the war was influencing the rhetoric of this publication at the time.
+# Another interesting thing to note is mention of Woodrow Wilson in July. 
+# This could either reflect simply discussion of him due to the war, or, it could be due to his support in 1918 of the women’s suffrage amendment. 
+# Either way, it shows the president’s importance to the publication.
 
-## Clustering
-
-# For June
-set.seed(10)
-centers <- 150
-june.clustering <- kmeans(models[["June"]], centers = centers, iter.max = 40)
-
-sapply(sample(1:centers, 10), function(n) {
-    names(june.clustering$cluster[june.clustering$cluster == n][1:10])
-})
-
-# For July
-set.seed(10)
-centers <- 150
-july.clustering <- kmeans(models[["July"]], centers = centers, iter.max = 40)
-
-sapply(sample(1:centers, 10), function(n) {
-    names(july.clustering$cluster[july.clustering$cluster == n][1:10])
-})
-
-# For August
-set.seed(10)
-centers <- 150
-aug.clustering <- kmeans(models[["July"]], centers = centers, iter.max = 40)
-
-sapply(sample(1:centers, 10), function(n) {
-    names(aug.clustering$cluster[aug.clustering$cluster == n][1:10])
-})
-
-## Dendogram
-
+## Dendograms
 # For June
 june.suffrage.dendro <- c("write", "protest", "vote", "suffrage")
 term_set <- lapply(
@@ -269,8 +255,32 @@ subset %>%
     hclust() %>%
     plot()
 
+# I found the dendrograms useful for providing insight into the contextuality of the use of certain key words. 
+# We see voting being connected to the military, writing being connected to words like “send”, “talk”, “him”, (I am guessing this is referring to sending letters). 
+# June and July especially seem to be reflecting wartime rhetoric. 
+# Also of note here is that words like “hospitals”, “preparing”, “country”, and “law” being clustered near protest and vote could reflect the onset of the Spanish flu pandemic which was beginning to spread rapidly during this time.
+
+
 ### Summary of Findings
 
-# Before performing a word vector analysis on this corpus, I knew from previous text analysis and topic modeling that it focused on the women's suffrage movement. I was therefore interseted in exploring how this publication went about discussing voting and women earning the right to vote. I also knew that it was a fairly small corpus and divided into the three summer months (June, July, and August), so I was interested in doing a filtered analysis of each of these months to see if there were any variations throughout that would reflect historical change.
+# Before performing a word vector analysis on this corpus, I knew from previous text analysis and topic modeling that it focused on the women's suffrage movement. 
+# I was therefore interseted in exploring how this publication went about discussing voting and women earning the right to vote. I also knew that it was a fairly small corpus and divided into the three summer months (June, July, and August), so I was interested in doing a filtered analysis of each of these months to see if there were any variations throughout that would reflect historical change.
 
-# 
+# Overall, the main way I noticed that The Woman Citizen talks about voting related to women is that it utilizes wartime rhetoric a fair amount, particularly in June and July. 
+# This demonstrates the importance of WWI to the women’s suffragist movement, and how it was likely common to employ tactics that promote women’s suffrage as being good for the benefit of the country and American soldiers (many of whom were fathers and husbands of suffragists).
+# Although there was a significantly larger amount of masculine associated words in June entries, The Woman Citizen overall is clearly directed towards a female audience. 
+# I am making this observation based on the fact that in July and August, feminine associated words dominated and reflected activism and political action (i.e. “federal”, “resolutions”, “convention”, “primary”, “candidates”, “petition”, “passed”, and “campaign”). 
+# This tells me that this publication encouraged its women readers to have an active role in the suffragist movement. 
+
+# Furthermore, the way that The Woman Citizen talks about men seems largely attached to women. 
+# This is demonstrated in June by looking at the masculine associated words, some of which include “help”, “hope”, “father”, “pledge”, “vet”, “husband”, and “salary”, highlight the connected of the man to the woman, particularly relating to their potential role in the war. 
+# This further supports the overarching observation that wartime/military rhetoric was a popular tactic for publications serving the women’s suffrage movement. 
+
+# The main shift over the course of the three months of this publication seems to be that there was a greater emphasis in June and July on warfare rhetoric, 
+# with more emphasis on women’s protest and political action in August. 
+
+# After performing a word vector analysis on this corpusl, I am left with a greater understanding of the rhetoric used in this publication.
+# It is clear that The Woman Citizen was dedicated to promoting women's suffrage through supporting the war effort. 
+# This is demonstrated through the use of military and wartime rhetoric, as well as the focus on women’s political action and activism associated with the war.
+# Furthermore, it is clear by observing the strong push of wartime rhetoric in June and July means reflects the historical context of the end of the war giving the publication a new focus and strategy.
+# It is therefore overall clear that this publication is potentially reflective of the braoder trend of the women's suffrage movement being influenced heavily by the war.
