@@ -125,7 +125,13 @@ ggplot() +
 
 (@) Create a map that uses your geocoded data from the Boston Women Voters dataset. 
 ```{r}
+boston.map <- map_data("county") %>% filter(subregion == "suffolk") %>% filter(region == "massachusetts")
 
+ggplot() +
+   geom_map(data = boston.map, map = boston.map, aes(x = long, y = lat, map_id = region), fill = "lightblue", color = "black") +
+  geom_point(data = bwv.data.coordinates, mapping = aes(x = longitude, y = latitude), color = "red") +
+  labs(title = "Boston Women Voters") +
+  theme_minimal() # The base map is not appearing here so I need to figure that out ...
 ```
 
 Lets return to the recreational data for a minute.
@@ -189,7 +195,7 @@ ggplot(data = nhgis, aes(fill = AZF001)) +
 
 ```
 (@) In the code above, why filter out Hawaii and Alaska? Try commenting out that line and rerunning the code. What happens? Why might we want to do this? Why might we not want to do this? How does it shape the interpretation?
->
+> Filtering out Hawaii and Alaska makes the map more readable. # Come back to this #
 
 This is a great start. But using AZF001 (Native born males) as the fill does not create a useful visualization. It doesn't give us a sense of the proportion of that data. There are multiple problems with the map as it is, but one is that the color scale makes this incredibly hard to read. We can fix that by using a scale to break the values of AZF001 into bins and assign each a color. R has a function for this. It comes from the scales pacakge which you may need to install.
 
@@ -203,12 +209,21 @@ This is now much more readable but the numbers represented are simply the raw po
 
 (@) First, create a variable called total_male_pop, with the total foreign and native born male population by summing the variables AZF001 and AZF003. 
 ```{r}
+invalid_geometries <- st_is_valid(nhgis)
+  nhgis <- nhgis %>% filter(invalid_geometries)
 
+
+total_male_pop <- nhgis %>% 
+  summarize(total_male_pop = sum(AZF001, AZF003, na.rm = TRUE))
 ```
 
 (@) Now, use the total_male_pop variable and create a variable for the the percentage of foreign born males.
 ```{r}
-
+percent_foreign_born_males <- nhgis %>%
+  summarize(
+    total_male_pop = sum(AZF001, AZF003, na.rm = TRUE),
+    percent_foreign_born_males = (sum(AZF003, na.rm = TRUE) / total_male_pop) * 100
+  )
 ```
 
 (@) Now map your result. You'll want to replicate the code from the example above, but this time add another layer to the plot - a scale. Here we'll use this scale `scale_fill_continuous("", labels = scales::percent)`
@@ -219,7 +234,15 @@ Before you write that code, look up the documentation for the above code (and lo
 
 Now create the map: 
 ```{r}
+nhgis <- nhgis %>%
+  mutate(
+    total_male_pop = AZF001 + AZF003,
+    percent_foreign_born_males = ifelse(total_male_pop > 0, (AZF003 / total_male_pop) * 100, 0)
+  )
 
+ggplot(data = nhgis, aes(fill = percent_foreign_born_males)) +
+  geom_sf() +
+  scale_fill_continuous("", labels = scales::percent) # I don't really understand why we are using this scale...
 ```
 
 ### Leaflet
