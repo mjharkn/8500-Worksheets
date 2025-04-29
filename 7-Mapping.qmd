@@ -272,12 +272,14 @@ leaflet(data=rec.data.coordinates) %>% addTiles() %>% addMarkers(~longitude, ~la
 
 (@) Use leaflet to map a dataset of your choice: 
 ```{r}
-
+leaflet(data = bwv.data.coordinates) %>% addTiles() %>% addMarkers(~longitude, ~latitude, popup = paste("Single woman voter"))
 ```
 
 (@) Explain what choices you made in building this map? Why might you use leaflet over ggplot? When would ggplot be more desirable? 
 
->
+> I chose the Boston Women Voters data because it consists of a variety of home addresses, which I thought would be interesting to map using leaflet. Using leaflet over ggplot in this situation has some advantages, as since these are addresses, it is interesting to zoom in and examine the area around where the single woman voter lived. The downside to this, in this case, is that this data is over 100 years old and our basemap for leaflet is recent. This means that locations may have experienced major changes over the years. 
+
+*** ADD TO THIS AFTER FIXING BWV MAP FROM EARLIER QUESTION ***
 
 
 ### Exercises
@@ -287,3 +289,65 @@ For the next portion of this worksheet you will use some data about national par
 parks <- read.csv("https://raw.githubusercontent.com/regan008/DigitalMethodsData/main/raw/parks-geocoded.csv")
 ```
 
+```{r}
+world.map <- map_data("world")
+
+ggplot() +
+  geom_map(data = world.map, map = world.map, aes(long, lat, map_id = region), fill = "lightgray", color = "black") +
+  geom_point(data = parks, aes(x = lon, y = lat)) +
+  theme_minimal() # static map 
+
+base.map <- leaflet() %>% addTiles()
+
+leaflet(data = parks) %>% addTiles() %>% addMarkers(~lon, ~lat, popup = paste(parks$park, "established in", parks$year, sep = " "))
+```
+
+```{r}
+parks.uk.eu <- parks %>%
+  filter(country %in% c("United Kingdom", "Albania", "Andorra", "Austria", "Belarus", "Belgium", "Bosnia Herzegovina", "Bulgaria", "Croatia", "Czech Republic", "Denmark", "Estonia", "Finland", "France", "Germany", "Hungary", "Italy", "Kosovo", "Latvia", "Lithuania", "Moldova", "Montenegro", "Netherlands", "North Macedonia", "Norway", "Poland", "Romania", "Serbia", "Slovakia", "Spain", "Sweden", "Switzerland"))
+
+ggplot() +
+  geom_map(data = world.map, map = world.map, aes(long, lat, map_id = region), fill = "lightgray", color = "black") +
+  geom_point(data = parks.gb.eu, aes(x = lon, y = lat)) +
+  theme_minimal()
+
+leaflet(data = parks.gb.eu) %>% addTiles() %>% addMarkers(~lon, ~lat, popup = paste(parks$park, "established in", parks$year, sep = " "))
+```
+
+> 
+A comparison of British parks to European ones will I think show that they slant older, and that there have not been as many created in recent decades.
+I also think that British parks will generally be larger than European ones, and likely closer to urban areas.
+I also compiled the total sq km that parks occupy in each country so that this can be compared
+I compiled some more specific data on France and Germany as the two most relevant bases for comparison. For France and Germany, I looked at the closest cities of over 1 million. For France I was able to get the population of people who live in each park, so that can be compared as well.
+I am eager for your students to suggest other points of comparison, in addition to the best ways to visualize the points above.
+
+```{r}
+parks.us.uk <- parks %>% filter(country %in% c("United States", "United Kingdom"))
+
+ggplot() +
+  geom_map(data = world.map, map = world.map, aes(long, lat, map_id = region), fill = "lightgray", color = "black") +
+  geom_point(data = parks.us.uk, aes(x = lon, y = lat)) +
+  theme_minimal()
+
+leaflet(data = parks.us.uk) %>% addTiles() %>% addMarkers(~lon, ~lat, popup = paste(parks$park, "established in", parks$year, sep = " "))
+```
+
+> 
+I think the data will show that American parks are older, larger and further from urban areas.
+See #5 above.
+
+```{r}
+parks.uk.ca.nz.sa <- parks %>% filter(country %in% c("United Kingdom", "Canada", "New Zealand", "South Africa"))
+
+ggplot() +
+  geom_map(data = world.map, map = world.map, aes(long, lat, map_id = region), fill = "lightgray", color = "black") +
+  geom_point(data = parks.uk.ca.nz.sa, aes(x = lon, y = lat)) +
+  theme_minimal()
+
+leaflet(data = parks.uk.ca.nz.sa) %>% addTiles() %>% addMarkers(~lon, ~lat, popup = paste(parks$park, "established in", parks$year, sep = " "))
+```
+
+> 
+I am uncertain as the whether these countries should be compared to Britain collectively (as parts of the former empire) or individually. Canada, for example, might better be combined with America in a "North American" category.
+Beyond that, I'm not really sure what the data will show, but the points in 1-3 (age, size, proximity to urban areas) in "Britain vs Europe" above are possibly relevant.
+See #5 above.
